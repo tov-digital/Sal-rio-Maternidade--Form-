@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <title>PLENA</title>
+  <defs><clipPath id="o"><circle cx="50" cy="50" r="34.5"/></clipPath></defs>
+  <circle cx="50" cy="50" r="50" fill="#4A1942"/>
+  <circle cx="50" cy="50" r="34.5" fill="#FBF0F4"/>
+  <path clip-path="url(#o)" fill="#C48DA6" fill-rule="evenodd" d="M0 0h100v100H0zM45.5 45.5m-31.5 0a31.5 31.5 0 1 0 63 0a31.5 31.5 0 1 0-63 0z"/>
+  <circle cx="50" cy="50" r="25" fill="#4A1942"/>
+</svg>
