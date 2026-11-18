@@ -96,36 +96,64 @@ async function save(stage, currentAnswers, currentContact) {
   if (demo || !currentContact) return;
   if (!leadId) leadId = crypto.randomUUID();
 
-  // Mapeia todas as perguntas da rota percorrida pelo usuário para pegar o texto exato
-  const route = questions(currentAnswers);
-  const findOptionLabel = (fieldId, val) => {
-    if (!val) return null;
-    const q = route.find(item => item.id === fieldId);
-    if (q?.options) {
-      const opt = q.options.find(o => o.value === val);
-      if (opt) return opt.label;
-    }
-    const allRoutes = [
-      ...questions({ situation: "pregnant", holder: "self", work: "no" }),
-      ...questions({ situation: "pregnant", holder: "other", work: "no" }),
-      ...questions({ situation: "postpartum", holder: "self", work: "no" }),
-      ...questions({ situation: "postpartum", holder: "other", work: "no" })
-    ];
-    const fallbackQ = allRoutes.find(item => item.id === fieldId && item.options?.some(o => o.value === val));
-    const fallbackOpt = fallbackQ?.options?.find(o => o.value === val);
-    return fallbackOpt ? fallbackOpt.label : val;
+  // Mapeamentos específicos por etapa solicitados para o webhook
+  const mapSituacao = {
+    pregnant: "Não",
+    postpartum: "Sim"
   };
 
-  const situacao = currentAnswers.situation ? findOptionLabel("situation", currentAnswers.situation) : null;
-  const tempo = currentAnswers.timing ? findOptionLabel("timing", currentAnswers.timing) : null;
-  const titular = currentAnswers.holder ? findOptionLabel("holder", currentAnswers.holder) : null;
-  const trabalho = currentAnswers.work ? findOptionLabel("work", currentAnswers.work) : null;
-  const historico = currentAnswers.history ? findOptionLabel("history", currentAnswers.history) : null;
-  const pedido = currentAnswers.request ? findOptionLabel("request", currentAnswers.request) : null;
+  const mapTempo = {
+    "this-month": "Altíssima",
+    "next-month": "Alta",
+    "two-three": "Média",
+    "later": "Baixa",
+    "under-three": "Nascido",
+    "under-year": "Nascido",
+    "one-three": "Nascido",
+    "three-five": "Nascido",
+    "over-five": "Desqualificado"
+  };
+
+  const mapTitular = {
+    self: "Sim",
+    other: "Não"
+  };
+
+  const mapTrabalho = {
+    yes: "CLT",
+    no: "Desempregada",
+    "self-employed": "MEI",
+    informal: "Autônoma"
+  };
+
+  const mapHistorico = {
+    yes: "Sim",
+    no: "Não",
+    unknown: "Não sei"
+  };
+
+  const mapPedido = {
+    none: "Não",
+    denied: "Negado",
+    pending: "Em análise",
+    approved: "Aprovado",
+    unknown: "Não sei"
+  };
+
+  const situacao = currentAnswers.situation ? (mapSituacao[currentAnswers.situation] ?? null) : null;
+  const tempo = currentAnswers.timing ? (mapTempo[currentAnswers.timing] ?? null) : null;
+  const titular = currentAnswers.holder ? (mapTitular[currentAnswers.holder] ?? null) : null;
+  const trabalho = currentAnswers.work ? (mapTrabalho[currentAnswers.work] ?? null) : null;
+  const historico = (currentAnswers.work !== "yes" && currentAnswers.history)
+    ? (mapHistorico[currentAnswers.history] ?? null)
+    : null;
+  const pedido = (currentAnswers.situation === "postpartum" && currentAnswers.request)
+    ? (mapPedido[currentAnswers.request] ?? null)
+    : null;
+
   const nome = currentContact.name?.trim() || null;
   const whatsapp = currentContact.phone || null;
 
-  // Objeto 100% plano, sem arrays ou objetos aninhados, em português claro
   const payload = {
     id_lead: leadId,
     nome: nome,
